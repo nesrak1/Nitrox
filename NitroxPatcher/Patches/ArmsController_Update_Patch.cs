@@ -4,7 +4,7 @@ using Harmony;
 
 namespace NitroxPatcher.Patches
 {
-    public class ArmsController_Update_Patch : NitroxPatch
+    /*public class ArmsController_Update_Patch : NitroxPatch
     {
         public static readonly Type TARGET_CLASS = typeof(ArmsController);
         public static readonly MethodInfo TARGET_METHOD = TARGET_CLASS.GetMethod("Update", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -47,5 +47,5 @@ namespace NitroxPatcher.Patches
         {
             PatchPrefix(harmony, TARGET_METHOD);
         }
-    }
+    }*/
 }

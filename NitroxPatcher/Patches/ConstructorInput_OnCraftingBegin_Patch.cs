@@ -32,7 +32,7 @@ namespace NitroxPatcher.Patches
                      * TransientLocalObjectManager.Add(TransientLocalObjectManager.TransientObjectType.CONSTRUCTOR_INPUT_CRAFTED_GAMEOBJECT, gameObject);
                      */
                     yield return new ValidatedCodeInstruction(OpCodes.Ldc_I4_0);
-                    yield return new ValidatedCodeInstruction(OpCodes.Ldloc_0);
+                    yield return new ValidatedCodeInstruction(OpCodes.Ldloc_2); //ldloc_0 changed to ldloc_2 (we need to check locals instead of hardcoding variable index!)
                     yield return new ValidatedCodeInstruction(OpCodes.Call, typeof(TransientLocalObjectManager).GetMethod("Add", BindingFlags.Static | BindingFlags.Public, null, new Type[] { TransientObjectType.CONSTRUCTOR_INPUT_CRAFTED_GAMEOBJECT.GetType(), typeof(object) }, null));
                 }
             }

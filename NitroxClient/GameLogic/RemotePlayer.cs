@@ -11,8 +11,8 @@ namespace NitroxClient.GameLogic
     {
         public readonly GameObject Body;
         public readonly GameObject PlayerView;
-        public readonly AnimationController AnimationController;
-        public readonly ArmsController ArmsController;
+        public readonly PlayerAnimationController AnimationController;
+        //public readonly ArmsController ArmsController;
         public readonly Rigidbody RigidBody;
 
         public Vehicle Vehicle { get; private set; }
@@ -29,6 +29,7 @@ namespace NitroxClient.GameLogic
             //Cheap fix for showing head, much easier since male_geo contains many different heads
             originalBody.GetComponentInParent<Player>().head.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
             Body = Object.Instantiate(originalBody);
+            Body.name = "bp_" + playerId.Substring(0, Mathf.Min(playerId.Length, 8));
             originalBody.GetComponentInParent<Player>().head.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly;
 
 
@@ -37,10 +38,10 @@ namespace NitroxClient.GameLogic
 
             //Get player
             PlayerView = Body.transform.Find("player_view").gameObject;
-
-            //Move variables to keep player animations from mirroring and for identification
-            ArmsController = PlayerView.GetComponent<ArmsController>();
-            ArmsController.smoothSpeed = 0;
+            
+            ////Move variables to keep player animations from mirroring and for identification
+            //ArmsController = PlayerView.GetComponent<ArmsController>();
+            //ArmsController.smoothSpeed = 0;
 
             //Sets up a copy from the xSignal template for the signal
             //todo: settings menu to disable this?
@@ -53,7 +54,21 @@ namespace NitroxClient.GameLogic
             ping.SetLabel("Player " + playerId);
             ping.pingType = PingType.Signal;
 
-            AnimationController = PlayerView.AddComponent<AnimationController>();
+            //AnimationController = PlayerView.AddComponent<AnimationController>();
+            AnimationController = PlayerView.AddComponent<PlayerAnimationController>();
+            ArmsController oldController = PlayerView.GetComponent<ArmsController>();
+            AnimationController.leftAimIKTransform = oldController.leftAimIKTransform;
+            AnimationController.rightAimIKTransform = oldController.rightAimIKTransform;
+            AnimationController.lookTargetTransform = oldController.lookTargetTransform;
+            AnimationController.attachedLeftHandTarget = oldController.attachedLeftHandTarget;
+            AnimationController.leftHandElbow = oldController.leftHandElbow;
+            AnimationController.bleederAttackTarget = oldController.bleederAttackTarget;
+            AnimationController.ikToggleTime = oldController.ikToggleTime;
+            AnimationController.leftHandAttach = oldController.leftHandAttach;
+            AnimationController.rightHandAttach = oldController.rightHandAttach;
+            AnimationController.leftHand = oldController.leftHand;
+            AnimationController.rightHand = oldController.rightHand;
+            Object.Destroy(oldController);
 
             ErrorMessage.AddMessage($"{playerId} joined the game.");
         }
@@ -109,7 +124,7 @@ namespace NitroxClient.GameLogic
                 if (PilotingChair != null)
                 {
                     Attach(PilotingChair.sittingPosition.transform);
-                    ArmsController.SetWorldIKTarget(PilotingChair.leftHandPlug, PilotingChair.rightHandPlug);
+                    AnimationController.SetWorldIKTarget(PilotingChair.leftHandPlug, PilotingChair.rightHandPlug);
 
                     mpCyclops.CurrentPlayer = this;
                     mpCyclops.Enter();
@@ -117,7 +132,7 @@ namespace NitroxClient.GameLogic
                 else
                 {
                     SetSubRoot(SubRoot);
-                    ArmsController.SetWorldIKTarget(null, null);
+                    AnimationController.SetWorldIKTarget(null, null);
 
                     mpCyclops.CurrentPlayer = null;
                     mpCyclops.Exit();
@@ -152,7 +167,7 @@ namespace NitroxClient.GameLogic
                     Vehicle.mainAnimator.SetBool("player_in", false);
 
                     Detach();
-                    ArmsController.SetWorldIKTarget(null, null);
+                    AnimationController.SetWorldIKTarget(null, null);
 
                     Vehicle.GetComponent<MultiplayerVehicleControl<Vehicle>>().Exit();
                 }
@@ -162,7 +177,7 @@ namespace NitroxClient.GameLogic
                     newVehicle.mainAnimator.SetBool("player_in", true);
 
                     Attach(newVehicle.playerPosition.transform);
-                    ArmsController.SetWorldIKTarget(newVehicle.leftHandPlug, newVehicle.rightHandPlug);
+                    AnimationController.SetWorldIKTarget(newVehicle.leftHandPlug, newVehicle.rightHandPlug);
 
                     newVehicle.GetComponent<MultiplayerVehicleControl<Vehicle>>().Enter();
                 }
@@ -185,11 +200,29 @@ namespace NitroxClient.GameLogic
 
         public void UpdateAnimation(AnimChangeType type, AnimChangeState state)
         {
+            bool isSet = state != AnimChangeState.OFF;
             switch (type)
             {
                 case AnimChangeType.UNDERWATER:
-                    AnimationController["is_underwater"] = state != AnimChangeState.OFF;
+                    AnimationController["is_underwater"] = isSet;
                     break;
+                case AnimChangeType.PDAEQUIPPED:
+                    AnimationController["using_pda"] = isSet;
+                    break;
+                case AnimChangeType.USINGTOOL:
+                    AnimationController["using_tool"] = isSet;
+                    break;
+                case AnimChangeType.USINGTOOLALT:
+                    AnimationController["using_tool_alt"] = isSet;
+                    break;
+            }
+            if (isSet)
+            {
+                AnimationController.PlayerFlags |= type;
+            }
+            else
+            {
+                AnimationController.PlayerFlags &= ~type;
             }
         }
     }

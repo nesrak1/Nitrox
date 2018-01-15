@@ -22,9 +22,7 @@ namespace NitroxModel.Packets.Processors.Abstract
                     {
                         throw new NotSupportedException($"{proc.Name} has more than one constructor!");
                     }
-
                     ConstructorInfo ctor = ctors.First();
-
                     // Prepare arguments for constructor (if applicable):
                     object[] args = ctor.GetParameters().Select(pi =>
                         {
@@ -35,7 +33,6 @@ namespace NitroxModel.Packets.Processors.Abstract
                             }
                             throw new ArgumentException($"Argument value not defined for type {pi.ParameterType}! Used in {proc}");
                         }).ToArray();
-
                     return (PacketProcessor)ctor.Invoke(args);
                 });
         }
