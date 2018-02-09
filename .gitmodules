@@ -1,3 +1,6 @@
 [submodule "Harmony"]
 	path = Harmony
 	url = ../../SubnauticaNitrox/Harmony.git
+[submodule "AssetsTools.NET_Unity"]
+	path = AssetsTools.NET_Unity
+	url = https://github.com/nesrak1/AssetsTools.NET_Unity
